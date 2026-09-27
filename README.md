@@ -15,6 +15,12 @@ npm run dev
 
 本地开发初次启动会在 `data/tradeflow.sqlite` 创建数据库和虚构示例数据。生产环境默认只创建空数据库，不会混入演示订单；仅在专用演示环境显式设置 `TRADEFLOW_SEED_DEMO_DATA=true` 才初始化示例数据。账号、商品、订单和库存状态均持久保存。
 
+## Netlify 前端部署
+
+仓库包含 `netlify.toml`，Netlify 可从 GitHub 导入本项目并运行 `npm run build`、发布 `dist`。`/api/*` 请求会由 Netlify Function 转发至独立后端；在 Netlify 的 Functions 环境变量中设置 `TRADEFLOW_API_URL` 为后端根地址（例如 `https://api.example.com`，不要在结尾加 `/api`）。
+
+Netlify 只负责前端静态资源和 API 代理，不运行本项目的 Express/SQLite 数据库。部署前需先将后端和持久化数据库部署到可公网访问的主机，并设置生产 `TRADEFLOW_SETUP_TOKEN`、持久化 `DATA_DIR` 和 HTTPS。未配置 `TRADEFLOW_API_URL` 时，前端可以加载，但登录及业务 API 会返回服务未配置提示。
+
 ## 用户与权限
 
 - **管理员**：管理用户、商品和库存调整，并执行全部订单操作。
