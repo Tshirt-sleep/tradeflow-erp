@@ -29,7 +29,7 @@ services:
     profiles: [cloud]
     restart: unless-stopped
     depends_on:
-      tradeflow:
+      next-web:
         condition: service_healthy
     environment:
       TRADEFLOW_DOMAIN: ${TRADEFLOW_DOMAIN:-}
@@ -41,6 +41,31 @@ services:
       - ./infra/alibaba/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+  next-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.next
+    restart: unless-stopped
+    profiles: [cloud]
+    depends_on:
+      tradeflow:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      ERP_API_INTERNAL_URL: http://tradeflow:3001
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
 volumes:
   tradeflow-data:
   caddy_data:

@@ -1,11 +1,15 @@
 node_modules/
 dist/
+.next/
 .npm-cache/
 data/
 .env
 .env.*
 !.env.example
+!.env.local.example
+!.env.demo
 *.log
+*.tsbuildinfo
 infra/alibaba/.terraform/
 .terraform-plugin-cache/
 .terraform-tmp/

@@ -1,4 +1,13 @@
 {$TRADEFLOW_DOMAIN} {
 	encode zstd gzip
-	reverse_proxy tradeflow:3001
+	handle /legacy* {
+		uri strip_prefix /legacy
+		reverse_proxy tradeflow:3001
+	}
+	handle /assets/* {
+		reverse_proxy tradeflow:3001
+	}
+	handle {
+		reverse_proxy next-web:3000
+	}
 }

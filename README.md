@@ -1,6 +1,6 @@
 # TradeFlow ERP · 跨境电商管理
 
-Vue 3 + Express + SQLite 的全栈学习项目。订单、商品、库存、用户和权限数据保存于 SQLite。订单由本地手工录入，发货时手工登记承运商和追踪号。
+Next.js App Router + Express + Vue 3 + SQLite 的渐进迁移项目。Next.js 是新入口并提供服务端 AI 接口；当前订单、商品、库存、用户与权限 API 暂由 Express 提供，完整 Vue 工作区通过 `/classic` 保留。业务数据保存于 SQLite。
 
 ## 本地运行
 
@@ -11,15 +11,19 @@ npm install
 npm run dev
 ```
 
-开发服务器同时启动 Vite 和 API。打开 Vite 输出的地址（通常为 `http://localhost:5173`）；后端健康检查为 `http://127.0.0.1:3001/api/health`，返回数据库、数据/备份目录可写状态及异地备份是否配置。首次访问时创建管理员账号，密码至少 12 位。生产环境创建首个管理员还需要 `TRADEFLOW_SETUP_TOKEN`：先在服务器 `.env` 设置至少 32 位随机口令，安全地交给初始化管理员；创建首个账号后该口令不再接受初始化请求。可在本机用 `openssl rand -base64 48` 生成，切勿提交到代码仓库或发在聊天里。
+`npm run dev` 会启动 Next.js、旧 Vue/Vite 工作区和 Express API。打开 `http://127.0.0.1:3000`；Next.js 入口可进入 `/classic` 使用完整旧工作区；业务健康检查为 `http://127.0.0.1:3000/api/health`。复制 `.env.local.example` 为 `.env.local`，在其中填写 AI 服务端变量 `AI_BASE_URL`、`AI_MODEL`、`AI_API_KEY`。AI 密钥不得使用 `NEXT_PUBLIC_` 前缀、写入浏览器或提交 Git。Next.js 只会在服务器端验证会话并请求 AI 服务。
+
+首次访问时创建管理员账号，密码至少 12 位。生产环境创建首个管理员还需要 `TRADEFLOW_SETUP_TOKEN`：先在服务器 `.env` 设置至少 32 位随机口令；创建首个账号后初始化接口会关闭。可在本机用 `openssl rand -base64 48` 生成，切勿提交到代码仓库或发在聊天里。
 
 本地开发初次启动会在 `data/tradeflow.sqlite` 创建数据库和虚构示例数据。生产环境默认只创建空数据库，不会混入演示订单；仅在专用演示环境显式设置 `TRADEFLOW_SEED_DEMO_DATA=true` 才初始化示例数据。账号、商品、订单和库存状态均持久保存。
 
 ## Netlify 前端部署
 
-仓库包含 `netlify.toml`，Netlify 可从 GitHub 导入本项目并运行 `npm run build`、发布 `dist`。`/api/*` 请求会由 Netlify Function 转发至独立后端；在 Netlify 的 Functions 环境变量中设置 `TRADEFLOW_API_URL` 为后端根地址（例如 `https://api.example.com`，不要在结尾加 `/api`）。
+Netlify 现在使用 `npm run build:demo` 发布无需后端的浏览器演示版。它会绕过登录和所有服务端 API，将商品、订单、库存流水保存在浏览器 `localStorage`，并支持导出/恢复演示快照。数据不会上传，也不会跨浏览器、设备或用户同步；清除网站数据可能导致演示数据丢失。请勿把此演示版用于真实业务。
 
-Netlify 只负责前端静态资源和 API 代理，不运行本项目的 Express/SQLite 数据库。部署前需先将后端和持久化数据库部署到可公网访问的主机，并设置生产 `TRADEFLOW_SETUP_TOKEN`、持久化 `DATA_DIR` 和 HTTPS。未配置 `TRADEFLOW_API_URL` 时，前端可以加载，但登录及业务 API 会返回服务未配置提示。
+本机单独启动演示版可运行 `npm run dev:demo`，访问 Vite 输出的本机地址，无需启动 Express 或 Next.js。
+
+全栈版仍可用 `npm run build:legacy` 构建 Vue 静态前端，并通过 Netlify Function 代理到独立 Express/SQLite 后端；Next.js Route Handlers 与服务端 AI 助手则需运行在 Next.js Node 服务中。部署选择和 AI 密钥配置见[Next.js 迁移与 AI 接入方案](docs/NextJs迁移与AI接入方案.md)。
 
 ## 用户与权限
 
@@ -54,7 +58,7 @@ npm test
 
 ## 容器部署
 
-Docker Compose 配置将数据库持久化到 `tradeflow-data` 命名卷，容器提供前端页面和 API。默认只将服务绑定到本机回环地址，适合由同机反向代理提供 HTTPS；不要直接以明文形式暴露公网端口。
+Docker Compose 将数据库持久化到 `tradeflow-data` 命名卷。普通本地容器模式由 Express 提供旧页面和 API；云端 `cloud` profile 启动 Next.js、Express/SQLite 和 Caddy，Caddy 将请求交给 Next.js，Next.js 再代理旧业务 API。默认业务端口只绑定到本机回环地址，公网仅开放 80/443。
 
 阿里云部署脚本使用 `--profile cloud` 启动 Caddy HTTPS 入口。启动前将 `.env` 的 `TRADEFLOW_DOMAIN` 改成解析到 ECS 的真实域名、设 `TRUST_PROXY_HOPS=1`（应用只信任唯一一层 Caddy 代理），并开放安全组 80/443；本地开发默认不启动这个云端入口且代理信任保持为 0。
 

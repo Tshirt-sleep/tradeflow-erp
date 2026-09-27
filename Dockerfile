@@ -4,7 +4,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY index.html vite.config.js ./
 COPY src ./src
-RUN npm run build
+RUN npm run build:legacy
 
 FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production PORT=3001 HOST=0.0.0.0 DATA_DIR=/data

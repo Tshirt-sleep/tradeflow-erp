@@ -4,12 +4,20 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k \"npm:dev:server\" \"npm:dev:client\"",
+    "dev": "npm run dev:next",
+    "dev:next": "concurrently -k \"npm:dev:server\" \"npm:dev:client\" \"npm:dev:web\"",
+    "dev:web": "next dev --hostname 127.0.0.1 --port 3000",
     "dev:server": "node --watch server/index.js",
-    "dev:client": "vite",
-    "build": "vite build",
+    "dev:client": "vite --port 5180 --strictPort",
+    "dev:demo": "vite --mode demo --port 5180 --strictPort",
+    "build": "next build",
+    "build:next": "next build",
+    "build:legacy": "vite build",
+    "build:demo": "vite build --mode demo",
     "test": "node --test",
-    "start": "node server/index.js",
+    "start": "next start --hostname 0.0.0.0 --port 3000",
+    "start:next": "next start --hostname 0.0.0.0 --port 3000",
+    "start:api": "node server/index.js",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -21,7 +29,15 @@
     "dotenv": "^18.0.4",
     "express": "^5.1.0",
     "lucide-vue-next": "latest",
+    "next": "^16.3.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "vite": "latest",
     "vue": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "@types/react": "^19.3.0",
+    "typescript": "^5.9.3"
   }
 }

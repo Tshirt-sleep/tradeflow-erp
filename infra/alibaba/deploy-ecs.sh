@@ -68,8 +68,9 @@ docker compose --profile cloud config --quiet
 docker compose --profile cloud up -d --build
 
 for attempt in $(seq 1 30); do
-  if curl -fsS http://127.0.0.1:3001/api/health; then
-    printf '\nTradeFlow is healthy.\n'
+  if curl -fsS http://127.0.0.1:3001/api/health >/dev/null \
+    && docker compose exec -T next-web node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; then
+    printf '\nTradeFlow API and Next.js are healthy.\n'
     docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
     docker compose ps
     exit 0
@@ -77,5 +78,5 @@ for attempt in $(seq 1 30); do
   sleep 2
 done
 
-docker compose logs --tail=100 tradeflow >&2 || true
-die "TradeFlow did not become healthy within 60 seconds."
+docker compose logs --tail=100 tradeflow next-web caddy >&2 || true
+die "TradeFlow API or Next.js did not become healthy within 60 seconds."
