@@ -1,0 +1,15 @@
+region                  = "cn-hangzhou"
+availability_zone       = "cn-hangzhou-h"
+instance_type           = "REPLACE_WITH_AVAILABLE_ECS_TYPE"
+image_id                = "REPLACE_WITH_CURRENT_ALINUX3_IMAGE_ID"
+ecs_key_pair_name       = "REPLACE_WITH_EXISTING_ECS_KEY_PAIR"
+admin_ssh_cidr          = ""
+bucket_name             = "REPLACE_WITH_GLOBALLY_UNIQUE_PRIVATE_BUCKET"
+backup_prefix           = "tradeflow"
+backup_retention_days   = 365
+ecs_snapshot_retention_days = 7
+data_disk_size_gib      = 40
+data_disk_category      = "cloud_essd_entry"
+system_disk_category    = "cloud_essd_entry"
+system_disk_size_gib    = 40
+internet_bandwidth_mbps = 5

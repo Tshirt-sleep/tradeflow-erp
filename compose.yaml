@@ -1,0 +1,48 @@
+services:
+  tradeflow:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3001
+      DATA_DIR: /data
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-0}
+      TRADEFLOW_SETUP_TOKEN: ${TRADEFLOW_SETUP_TOKEN:-}
+      TRADEFLOW_SEED_DEMO_DATA: ${TRADEFLOW_SEED_DEMO_DATA:-false}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:-}
+      BACKUP_S3_REGION: ${BACKUP_S3_REGION:-cn-hangzhou}
+      BACKUP_S3_ENDPOINT: ${BACKUP_S3_ENDPOINT:-}
+      BACKUP_S3_FORCE_PATH_STYLE: ${BACKUP_S3_FORCE_PATH_STYLE:-false}
+      BACKUP_S3_PREFIX: ${BACKUP_S3_PREFIX:-tradeflow}
+      BACKUP_S3_CREDENTIAL_MODE: ${BACKUP_S3_CREDENTIAL_MODE:-}
+      BACKUP_S3_RAM_ROLE_NAME: ${BACKUP_S3_RAM_ROLE_NAME:-}
+      BACKUP_S3_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY_ID:-}
+      BACKUP_S3_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_ACCESS_KEY:-}
+      BACKUP_S3_SESSION_TOKEN: ${BACKUP_S3_SESSION_TOKEN:-}
+    volumes:
+      - ${TRADEFLOW_DATA_DIR:-tradeflow-data}:/data
+  caddy:
+    image: caddy:2-alpine
+    profiles: [cloud]
+    restart: unless-stopped
+    depends_on:
+      tradeflow:
+        condition: service_healthy
+    environment:
+      TRADEFLOW_DOMAIN: ${TRADEFLOW_DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./infra/alibaba/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+volumes:
+  tradeflow-data:
+  caddy_data:
+  caddy_config:
+

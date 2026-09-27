@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.npm-cache/
+data/
+.env
+.env.*
+!.env.example
+*.log
+infra/alibaba/.terraform/
+.terraform-plugin-cache/
+.terraform-tmp/
+infra/alibaba/*.tfstate
+infra/alibaba/*.tfstate.*
+infra/alibaba/terraform.tfvars
+infra/alibaba/*.tfplan

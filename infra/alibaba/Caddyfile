@@ -1,0 +1,4 @@
+{$TRADEFLOW_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy tradeflow:3001
+}
